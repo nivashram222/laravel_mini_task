@@ -18,20 +18,9 @@ class OrderService
         protected OrderRepositoryInterface $orderRepository,
     ) {}
 
-    /**
-     * Create an order with concurrency-safe stock deduction.
-     *
-     * @param string $customerName
-     * @param string $customerEmail
-     * @param array  $items  Array of ['product_id' => int, 'quantity' => int]
-     * @return Order
-     *
-     * @throws ValidationException
-     */
     public function createOrder(string $customerName, string $customerEmail, array $items): Order
     {
         return DB::transaction(function () use ($customerName, $customerEmail, $items) {
-            // 1. Find or create customer
             $customer = $this->customerRepository->firstOrCreate(
                 ['email' => $customerEmail],
                 ['name' => $customerName]
@@ -41,9 +30,7 @@ class OrderService
             $totalTax = 0;
             $orderLines = [];
 
-            // 2. Validate stock and compute line totals
             foreach ($items as $item) {
-                // Pessimistic lock — prevents overselling under concurrent requests
                 $product = $this->productRepository->findForUpdate($item['product_id']);
 
                 if (!$product) {
@@ -79,7 +66,6 @@ class OrderService
 
             $grandTotal = round($subtotal + $totalTax, 2);
 
-            // 3. Create the order
             $order = $this->orderRepository->create([
                 'customer_id' => $customer->id,
                 'subtotal' => round($subtotal, 2),
@@ -87,7 +73,6 @@ class OrderService
                 'grand_total' => $grandTotal,
             ]);
 
-            // 4. Create order items and deduct stock
             foreach ($orderLines as $line) {
                 $this->orderRepository->createItem($order, [
                     'product_id' => $line['product']->id,
@@ -100,10 +85,8 @@ class OrderService
                 $this->productRepository->decrementStock($line['product'], $line['quantity']);
             }
 
-            // 5. Load relationships for the response
             $order->load(['items.product', 'customer']);
 
-            // 6. Dispatch confirmation job
             OrderConfirmationJob::dispatch($order);
 
             return $order;

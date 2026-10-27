@@ -9,7 +9,6 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // Specific well-known products for a realistic retail catalog
         $products = [
             ['name' => 'Classic Sunglasses', 'code' => 'PRD-0001', 'price_per_unit' => 120.00, 'tax_percentage' => 18.00, 'stock_on_hand' => 50],
             ['name' => 'Leather Wallet', 'code' => 'PRD-0002', 'price_per_unit' => 85.00, 'tax_percentage' => 12.00, 'stock_on_hand' => 35],

@@ -13,10 +13,6 @@ class ProductController extends Controller
         protected ProductRepositoryInterface $productRepository,
     ) {}
 
-    /**
-     * Get all products.
-     * GET /api/products
-     */
     public function index(): JsonResponse
     {
         $products = $this->productRepository->all();
@@ -27,10 +23,6 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Get products below the low-stock threshold.
-     * GET /api/products/low-stock?threshold=10
-     */
     public function lowStock(Request $request): JsonResponse
     {
         $threshold = (int) $request->query('threshold', config('inventory.low_stock_threshold', 10));

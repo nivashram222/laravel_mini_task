@@ -7,6 +7,7 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Repositories\Interfaces\OrderRepositoryInterface;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
@@ -15,10 +16,7 @@ class OrderController extends Controller
         protected OrderRepositoryInterface $orderRepository,
     ) {}
 
-    /**
-     * Create a new order.
-     * POST /api/orders
-     */
+
     public function store(StoreOrderRequest $request): JsonResponse
     {
         try {
@@ -33,7 +31,7 @@ class OrderController extends Controller
                 'message' => 'Order created successfully.',
                 'data' => $order,
             ], 201);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Order could not be created.',
@@ -42,10 +40,6 @@ class OrderController extends Controller
         }
     }
 
-    /**
-     * Get a customer's order history by email.
-     * GET /api/customers/{email}/orders
-     */
     public function customerHistory(string $email): JsonResponse
     {
         $orders = $this->orderRepository->getByCustomerEmail($email);

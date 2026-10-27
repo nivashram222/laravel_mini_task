@@ -29,11 +29,7 @@ class EloquentProductRepository implements ProductRepositoryInterface
             ->orderBy('stock_on_hand')
             ->get();
     }
-
-    /**
-     * Find a product with a pessimistic lock (SELECT ... FOR UPDATE).
-     * Must be called within a DB transaction.
-     */
+    
     public function findForUpdate(int $id): ?Product
     {
         return Product::lockForUpdate()->find($id);
